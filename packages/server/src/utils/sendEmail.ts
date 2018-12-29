@@ -1,22 +1,39 @@
-import * as SparkPost from "sparkpost";
-const client = new SparkPost(process.env.SPARKPOST_API_KEY);
+import * as nodemailer from "nodemailer";
+// Generate SMTP service account from ethereal.email
 
 export const sendEmail = async (recipient: string, url: string) => {
-  const response = await client.transmissions.send({
-    options: {
-      sandbox: true
-    },
-    content: {
-      from: "testing@sparkpostbox.com",
-      subject: "Confirm Email",
-      html: `<html>
-        <body>
-        <p>Testing SparkPost - the world's most awesomest email service!</p>
-        <a href="${url}">confirm email</a>
-        </body>
-        </html>`
-    },
-    recipients: [{ address: recipient }]
+  const transporter = nodemailer.createTransport({
+    host: "smtp.ethereal.email",
+    port: 587,
+    auth: {
+      user: "bxctu5l4odyt3ppw@ethereal.email",
+      pass: "vH8qZsPHTqMCB9pqKF"
+    }
   });
-  console.log(response);
+
+  // Message object
+  const message = {
+    from: "Sender Name <sender@example.com>",
+    to: `Recipient <${recipient}>`,
+    subject: "Confirm Email",
+    text: "Confirm your email!",
+    html: `
+    <html>
+    <body>
+      <p> Testing Email</p>
+      <a href="${url}">Confirm Email</a>
+    </body>
+    </html>
+    `
+  };
+
+  transporter.sendMail(message, (err: any, info: any) => {
+    if (err) {
+      console.log("Error occurred. " + err.message);
+    }
+
+    console.log("Message sent: %s", info.messageId);
+    // Preview only available when sending through an Ethereal account
+    console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
+  });
 };
