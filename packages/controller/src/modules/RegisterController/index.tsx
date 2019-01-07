@@ -1,12 +1,15 @@
 import * as React from "react";
-import { graphql, ChildMutateProps } from "react-apollo";
+import { graphql, ChildMutateProps, FetchResult } from "react-apollo";
 import gql from "graphql-tag";
-import { RegisterMutationVariables, RegisterMutation } from "src/schemaTypes";
-
+import { RegisterMutation, RegisterMutationVariables } from "../../schemaTypes";
+import { normalizeErrors } from "../../utils/normalizeErrors";
+import { NormalizedErrorMap } from "../../types/normalizedErrorMap";
 interface Props {
   children: (
     data: {
-      submit: (values: RegisterMutationVariables) => Promise<null>;
+      submit: (
+        values: RegisterMutationVariables
+      ) => Promise<NormalizedErrorMap | null>;
     }
   ) => JSX.Element | null;
 }
@@ -16,11 +19,29 @@ class C extends React.PureComponent<
 > {
   submit = async (values: RegisterMutationVariables) => {
     console.log(values);
-    const response = await this.props.mutate({
-      variables: values
-    });
-    console.log("response: ", response);
-    return null;
+    const validationResp = this.props
+      .mutate({
+        variables: values
+      })
+      .then((response: FetchResult) => {
+        console.log("response: ", response);
+        if (response.data && response.data.hasOwnProperty("register")) {
+          const { data: { register } = response } = response;
+          if (register) {
+            return normalizeErrors(register);
+          } else {
+            return null;
+          }
+        } else {
+          return null;
+        }
+      })
+      .catch(err => {
+        console.error(err);
+        return null;
+      });
+
+    return validationResp;
   };
   render() {
     return this.props.children({ submit: this.submit });

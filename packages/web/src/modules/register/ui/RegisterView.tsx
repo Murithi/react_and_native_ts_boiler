@@ -1,11 +1,11 @@
 import React, { PureComponent } from "react";
-import * as AntD from "antd";
-import * as yup from "yup";
-import { withFormik, FormikErrors, FormikProps, Field, Form } from "formik";
+import { Form as AntForm, Icon, Button } from "antd";
+
+import { withFormik, FormikProps, Field, Form } from "formik";
 import { validUserSchema } from "@abb/common";
 import { InputField } from "../../shared/inputField";
-
-const { Form: AntForm, Icon, Button } = AntD;
+import { Link } from "react-router-dom";
+import { NormalizedErrorMap } from "@abb/controller";
 
 const FormItem = AntForm.Item;
 
@@ -15,7 +15,8 @@ interface FormValues {
 }
 
 interface Props {
-  submit: (values: FormValues) => Promise<FormikErrors<FormValues> | null>;
+  onFinish: () => void;
+  submit: (values: FormValues) => Promise<NormalizedErrorMap | null>;
 }
 export class C extends PureComponent<FormikProps<FormValues> & Props> {
   render() {
@@ -37,9 +38,7 @@ export class C extends PureComponent<FormikProps<FormValues> & Props> {
           />
 
           <FormItem>
-            <a className="login-form-forgot" href="">
-              Forgot password
-            </a>
+            <Link to="/forgot-password">Forgot password</Link>
           </FormItem>
           <FormItem>
             <Button
@@ -51,7 +50,7 @@ export class C extends PureComponent<FormikProps<FormValues> & Props> {
             </Button>
           </FormItem>
           <FormItem>
-            Or <a href="">Login now!</a>
+            Or <Link to="login">Login now!</Link>
           </FormItem>
         </div>
       </Form>
@@ -68,6 +67,11 @@ export const RegisterView = withFormik<Props, FormValues>({
   },
   handleSubmit: async (values, { props, setErrors, setSubmitting }) => {
     const errors = await props.submit(values);
-    if (errors) setErrors(errors);
+    console.log(errors);
+    if (!errors) {
+      props.onFinish();
+    } else {
+      setErrors(errors);
+    }
   }
 })(C);

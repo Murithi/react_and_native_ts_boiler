@@ -1,13 +1,17 @@
 import * as nodemailer from "nodemailer";
 // Generate SMTP service account from ethereal.email
 
-export const sendEmail = async (recipient: string, url: string) => {
+export const sendEmail = async (
+  recipient: string,
+  url: string,
+  linkText: string
+) => {
   const transporter = nodemailer.createTransport({
     host: "smtp.ethereal.email",
     port: 587,
     auth: {
-      user: "bxctu5l4odyt3ppw@ethereal.email",
-      pass: "vH8qZsPHTqMCB9pqKF"
+      user: process.env.NODEMAILER_EMAIL,
+      pass: process.env.NODEMAILER_PASSWORD
     }
   });
 
@@ -21,7 +25,7 @@ export const sendEmail = async (recipient: string, url: string) => {
     <html>
     <body>
       <p> Testing Email</p>
-      <a href="${url}">Confirm Email</a>
+      <a href="${url}">${linkText}</a>
     </body>
     </html>
     `
